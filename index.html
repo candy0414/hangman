@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Simple Hangman</title>
+<script src="js/jquery.js"></script>
+<script type="text/javascript">
+
+var can_play = true;
+
+var to_guess = "";
+var display_word = "";
+var used_letters = "";
+var wrong_guesses = 0;
+
+function selectLetter(l)
+{
+if (can_play == false)
+{
+return;
+}
+
+if (used_letters.indexOf(l) != -1)
+{
+return;
+}
+	
+used_letters += l;
+document.game.usedLetters.value = used_letters;
+	
+if (to_guess.indexOf(l) != -1)
+{
+ // correct letter guess
+pos = 0;
+temp_mask = display_word;
+
+while (to_guess.indexOf(l, pos) != -1)
+{
+pos = to_guess.indexOf(l, pos);			
+end = pos + 1;
+
+start_text = temp_mask.substring(0, pos);
+end_text = temp_mask.substring(end, temp_mask.length);
+
+temp_mask = start_text + l + end_text;
+pos = end;
+}
+
+display_word = temp_mask;
+
+document.game.displayWord.value = display_word;
+		
+if (display_word.indexOf("#") == -1)
+{
+// won
+can_play = false;
+document.getElementById("win").style.display = "block";
+
+}
+}
+else
+{
+// incortect letter guess
+wrong_guesses += 1;
+eval("document.hm.src=\"hm" + wrong_guesses + ".gif\"");
+		
+if (wrong_guesses == 10)
+{
+// lost
+document.getElementById("lost").style.display = "block";
+can_play = false;
+}
+}
+}
+
+function reset()
+{
+selectWord();
+document.game.usedLetters.value = "";
+used_letters = "";
+wrong_guesses = 0;
+document.hm.src="hmstart.gif";
+}
+
+
+
+
+var radioValue;
+
+function begin(){
+	// console.log("asdfas");
+	document.getElementById('difficulty').style.display = "none";
+	document.getElementById('main').style.display = "block";
+
+	var radios = document.getElementsByName('difficulty');
+
+	for (var i = 0, length = radios.length; i < length; i++)
+	{
+		if (radios[i].checked)
+		{
+		// do whatever you want with the checked radio
+		console.log(radios[i].value);
+		radioValue = radios[i].value;
+
+		// only one radio can be logically checked, don't check the rest
+		break;
+		}
+	}
+	
+
+	$.ajaxSetup({
+		async: false
+	});
+
+	var getJSON = function(url) {
+	    return new Promise(function(resolve, reject) {
+	        var xhr = new XMLHttpRequest();
+	        xhr.open('get', url);
+	        xhr.responseType = 'json';
+	        xhr.onload = function() {
+	            var status = xhr.status;
+	            if (status == 200) {
+	                resolve(xhr.response);
+	            } else {
+	                reject(status);
+	            }
+	        };
+	        xhr.send();
+	    });
+	};
+	getJSON('https://hangman-micro-service-bpblrjerwh.now.sh/?difficulty='+radioValue).then(function(data) {
+		console.log("aSDfasdfasd");
+		// console.log(data["word"]);
+		to_guess = data["word"].toUpperCase();
+		console.log(to_guess);
+		reset();
+	    
+	}, function(status) {
+	    // alert('Something went wrong.'); 
+	});
+	
+}
+
+
+
+function selectWord()
+{
+console.log("selectword: came");
+can_play = true;
+console.log(to_guess);
+//document.game.theWord.value = to_guess;
+	
+// display masked word
+masked_word = createMask(to_guess);
+document.game.displayWord.value = masked_word;
+display_word = masked_word;
+}
+
+function createMask(m)
+{
+mask = "";
+word_lenght = m.length;
+
+for (i = 0; i < word_lenght; i ++)
+{
+mask += "#";
+}
+return mask;
+}
+
+
+</script>
+
+</head>
+
+<body>
+
+<center style=" margin-top: 100px">
+<h2>Simple Hangman Game</h2>
+<div id="difficulty" style="text-align: center;display:block;">
+	<input type="radio" id="easy" name="difficulty" value="easy" checked />
+	<label for="easy">easy</label>
+	<input type="radio" id="medium"name="difficulty" value="medium" />
+	<label for="medium">medium</label>
+	<input type="radio" id="hard"name="difficulty" value="hard" />
+	<label for="hard">hard</label><br>
+	<a href="javascript:begin()"><input type="button" style="cursor:pointer;margin-top:30px; margin-left: 10px; font-size:18px;" value="BEGIN"></a>
+</div>
+<div id="main" style="display:none">
+<p>
+	<img src="hmstart.gif" height="125" width="75" name="hm">
+</p>
+
+<form name="game">
+	<p style="font-weight:bold; font-size:18px;">
+		Display Word: &nbsp;&nbsp;&nbsp;<input type="text" style="cursor:no-drop; width:200px; font-size:18px;" name="displayWord" disabled />
+		<br />
+		<br />
+		Used Letters: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" style="cursor:no-drop; width:200px; font-size:18px;" name="usedLetters" disabled />
+	</p>
+</form>
+
+<p style="font-weight:bold; font-size:18px;">
+
+<label>Choose a letter:</label>
+
+<br />
+<br />
+
+<a href="javascript:selectLetter('Q');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="Q"></a>
+<a href="javascript:selectLetter('W');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="W"></a>
+<a href="javascript:selectLetter('E');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="E"></a>
+<a href="javascript:selectLetter('R');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="R"></a>
+<a href="javascript:selectLetter('T');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="T"></a>
+<a href="javascript:selectLetter('Y');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="Y"></a>
+<a href="javascript:selectLetter('U');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="U"></a>
+<a href="javascript:selectLetter('I');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="I"></a>
+<a href="javascript:selectLetter('O');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="O"></a>
+<a href="javascript:selectLetter('P');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="P"></a>
+<br />
+<br />
+<a href="javascript:selectLetter('A');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="A"></a>
+<a href="javascript:selectLetter('S');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="S"></a>
+<a href="javascript:selectLetter('D');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="D"></a>
+<a href="javascript:selectLetter('F');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="F"></a>
+<a href="javascript:selectLetter('G');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="G"></a>
+<a href="javascript:selectLetter('H');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="H"></a>
+<a href="javascript:selectLetter('J');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="J"></a>
+<a href="javascript:selectLetter('K');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="K"></a>
+<a href="javascript:selectLetter('L');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="L"></a>
+<br />
+<br />
+<a href="javascript:selectLetter('Z');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="Z"></a>
+<a href="javascript:selectLetter('X');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="X"></a>
+<a href="javascript:selectLetter('C');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="C"></a>
+<a href="javascript:selectLetter('V');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="V"></a>
+<a href="javascript:selectLetter('B');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="B"></a>
+<a href="javascript:selectLetter('N');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="N"></a>
+<a href="javascript:selectLetter('M');"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="M"></a>
+
+</p>
+
+<br />
+<div id="win" style="display: none">
+	<h1>You Win!</h1>
+</div>
+<div id="lost" style="display: none">
+	<h1>You Lost!</h1>
+</div>
+<p>
+<a href="javascript:location.reload(true)"><input type="button" style="cursor:pointer; margin-left: 10px; font-size:18px;" value="Restart game"></a>
+</p>
+</div>
+</center>
+
+</body>
+</html>
+
